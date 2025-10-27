@@ -38,15 +38,16 @@ elif selected_category == "Tech":
 elif selected_category == "Sports":
     url = "https://dwh.lequipe.fr/api/edito/rss?path=/"
 elif selected_category == "Environnement":
-    url = "https://www.20minutes.fr/feeds/rss-environnement.xml"
+    url = "https://www.actu-environnement.com/"
 else:
     url = "https://www.20minutes.fr/feeds/rss-une.xml"  # fallback
 
-# Parser le flux RSS
-feed = feedparser.parse(url)
 
 # Nombre d'articles à afficher
 n = 5
+
+# Parser le flux RSS
+feed = feedparser.parse(url)
 
 # Début du conteneur scrollable
 html_content = '<div style="height:500px; overflow:auto; border:1px solid #ddd; padding:10px; border-radius:10px;">'
@@ -90,14 +91,22 @@ st.markdown(html_content, unsafe_allow_html=True)
 
 
 # URL du site
-url = "https://www.franceinfo.fr/environnement/"
+url = "https://www.actu-environnement.com/"
 
 # Récupérer le HTML
 response = requests.get(url)
+response.encoding = 'utf-8'  # s'assurer du bon encodage
 
-# Sauvegarder dans un fichier local
-with open("reception.html", "w", encoding="utf-8") as f:
-    f.write(response.text)
+# Parser le contenu avec BeautifulSoup
+soup = BeautifulSoup(response.text, "html.parser")
 
-print("Fichier reception.html créé avec succès !")
+# Trouver tous les titres dans des balises <h2 class="titre">
+titres = soup.find_all("h2", class_="titre")
+
+# Extraire les 5 premiers titres
+for i, h2 in enumerate(titres[:n], start=1):
+    titre = h2.a.get_text(strip=True) if h2.a else "Titre non trouvé"
+    lien = h2.a["href"] if h2.a and "href" in h2.a.attrs else "#"
+    print(f"{i}. {titre}")
+    print(f"   🔗 Lien : {url.rstrip('/')}{lien}\n")
 
