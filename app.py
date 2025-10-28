@@ -5,8 +5,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from scripts.init_openai import get_openai_client
 
-# tanguy
 
 # Définir la locale en français
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
@@ -17,6 +17,9 @@ st.set_page_config(
     page_icon="🗞️",
     layout="centered",
 )
+
+# --- Création du client OpenAI via le script dans scripts/ ---
+client = get_openai_client()
 
 # --- EN-TÊTE ---
 st.title("📰 Les 5 articles du jour")
@@ -102,6 +105,8 @@ def afficher_flux(url, n):
 if url:
     afficher_flux(url, nombre_articles)
 
+st.divider()
+st.write("Article sélectionné :")
 
 
 # # URL du site
