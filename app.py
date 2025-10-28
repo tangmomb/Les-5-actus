@@ -6,6 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+# tanguy
+
 # Définir la locale en français
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 
