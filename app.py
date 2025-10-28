@@ -54,7 +54,8 @@ def afficher_flux(url, n):
     
     feed = feedparser.parse(url)
 
-    # Commencer le conteneur HTML
+    # Construire la liste d'articles et le conteneur HTML
+    articles = []
     html_content = (
         '<div style="height:500px; overflow:auto; border:1px solid #ddd; '
         'padding:10px; border-radius:10px;">'
@@ -96,17 +97,121 @@ def afficher_flux(url, n):
             '</div>'
         )
 
+        # Ajouter aux articles retournés
+        articles.append({
+            'title': entry.title,
+            'link': entry.link,
+            'description': description,
+            'image': image_url,
+        })
+
     html_content += '</div>'
 
     # ✅ Afficher le HTML dans Streamlit
     st.markdown(html_content, unsafe_allow_html=True)
 
+    # Retourner la liste d'articles pour permettre la sélection
+    return articles
+
+
+articles = []
 
 if url:
-    afficher_flux(url, nombre_articles)
+    articles = afficher_flux(url, nombre_articles)
 
+# Sélection d'un article et stockage du titre et du lien
 st.divider()
-st.write("Article sélectionné :")
+if articles:
+    titles = [a.get('title', 'Titre non disponible') for a in articles]
+    # Afficher les titres sous forme de boutons radio (titre uniquement)
+    selected_title = st.radio("Sélectionne un article :", titles)
+
+    # retrouver l'article correspondant (première occurrence)
+    selected_article = next((a for a in articles if a.get('title') == selected_title), None)
+    selected_link = selected_article.get('link') if selected_article else None
+
+# Bouton pour demander un résumé via OpenAI
+if st.button("Résumer l'article"):
+    if not selected_link:
+        st.warning("Aucun lien d'article disponible pour le résumé.")
+    else:
+        with st.spinner("Récupération de l'article et génération du résumé..."):
+            article_text = ""
+            try:
+                resp = requests.get(selected_link, timeout=10)
+                resp.encoding = resp.encoding or 'utf-8'
+                soup = BeautifulSoup(resp.text, "html.parser")
+
+                # Extraire le texte principal en concaténant les <p>
+                paragraphs = [p.get_text(separator=' ', strip=True) for p in soup.find_all('p')]
+                article_text = "\n\n".join(paragraphs).strip()
+            except Exception as e:
+                article_text = ""
+                st.error(f"Impossible de récupérer l'article : {e}")
+
+            # Si on n'a pas pu extraire le texte, enverra au moins le titre + lien
+            if not article_text:
+                prompt = (
+                    f"Voici un lien vers un article : {selected_link}\n"
+                    f"Tâche : propose un court résumé en français (3-5 phrases) en te basant sur le lien."
+                )
+            else:
+                # Limiter la taille du texte envoyé pour éviter d'excéder les tokens
+                max_chars = 15000
+                if len(article_text) > max_chars:
+                    article_text = article_text[:max_chars] + "\n\n...[truncated]"
+
+                prompt = (
+                    "Tu es un assistant utile. Résume en français l'article fourni. "
+                    "Donne un résumé concis en 3-5 phrases.\n\n"
+                    f"Contenu de l'article :\n{article_text}"
+                )
+
+            # Appel à l'API OpenAI via le client retourné par scripts.init_openai.get_openai_client()
+            try:
+                # Utiliser Responses API si disponible
+                response = client.responses.create(
+                    model="gpt-3.5-turbo",  # fallback simple model
+                    input=prompt,
+                )
+
+                # Récupérer le texte de sortie selon la forme renvoyée par le SDK
+                summary = None
+                if hasattr(response, 'output_text') and response.output_text:
+                    summary = response.output_text
+                else:
+                    # essayer d'extraire depuis response.output...
+                    try:
+                        # new SDK: response.output is a list of items with 'content'
+                        parts = []
+                        for item in getattr(response, 'output', []):
+                            if isinstance(item, dict) and 'content' in item:
+                                for c in item['content']:
+                                    if isinstance(c, dict) and c.get('type') == 'output_text':
+                                        parts.append(c.get('text', ''))
+                                    elif isinstance(c, str):
+                                        parts.append(c)
+                        summary = "".join(parts).strip() if parts else None
+                    except Exception:
+                        summary = None
+
+                if not summary:
+                    # dernier recours: regarder choices (ancienne API)
+                    try:
+                        choices = getattr(response, 'choices', None)
+                        if choices:
+                            summary = choices[0].message['content'] if isinstance(choices[0].message, dict) else str(choices[0].message)
+                    except Exception:
+                        summary = None
+
+                if summary:
+                    st.subheader("Résumé")
+                    st.write(summary)
+                else:
+                    st.error("Impossible d'extraire le résumé depuis la réponse OpenAI.")
+            except Exception as e:
+                st.error(f"Erreur lors de l'appel à l'API OpenAI : {e}")
+
 
 
 # # URL du site
