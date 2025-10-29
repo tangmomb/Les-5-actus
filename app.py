@@ -100,6 +100,8 @@ def afficher_flux(url, n):
 if url:
     afficher_flux(url, nombre_articles)
 
+## pour fonction scrapping pour site sans flux rss.
+#def flux_no_rss#
 
 
 
