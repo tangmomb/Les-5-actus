@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from .colors import background_color, border_color
 
 def get_articles_scraping(n):
-    """Scrape les n premiers articles du site actu-environnement.com."""
     url = "https://www.actu-environnement.com/"
     try:
         response = requests.get(url)

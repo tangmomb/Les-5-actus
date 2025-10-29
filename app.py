@@ -18,21 +18,19 @@ st.set_page_config(
     layout="centered",
 )
 
-# --- Création du client OpenAI via le script dans scripts/ ---
-client = get_openai_client()
-
 # --- EN-TÊTE ---
 st.title("📰 Les 5 articles du jour")
 st.write(f"📅 {datetime.now().strftime('%A %d %B %Y')}")
 st.divider()
+
+# --- Création du client OpenAI via le script dans scripts/ ---
+client = get_openai_client()
 
 # --- Liste des catégories ---
 categories = ["Généraliste", "Politique", "Tech", "Sports", "Environnement"]
 
 # --- Menu déroulant ---
 selected_category = st.selectbox("Sélectionne une catégorie :", categories)
-
-nombre_articles = 5
 
 # --- Choisir l'URL en fonction de la catégorie ---
 if selected_category == "Généraliste":
@@ -51,21 +49,24 @@ else:
 
 # Création de la liste d'articles
 articles = []
+nombre_articles = 5
 
+# Récupération des articles selon la catégorie (RSS ou scraping)
 if selected_category == "Environnement":
     articles = get_articles_scraping(nombre_articles)
     html_content = render_articles_html(articles)
     st.markdown(html_content, unsafe_allow_html=True)
-elif url and any(x in url for x in ["lequipe", "01net", "20minutes"]):
+else:
     articles = get_articles_rss(url, nombre_articles)
     html_content = render_articles_html(articles)
     st.markdown(html_content, unsafe_allow_html=True)
 
+st.divider()
 
 # Sélection d'un article et stockage du titre et du lien
-st.divider()
 if articles:
     titles = [a.get('title', 'Titre non disponible') for a in articles]
+    
     # Afficher les titres sous forme de boutons radio (titre uniquement)
     selected_title = st.radio("Sélectionne un article :", titles)
 
@@ -74,15 +75,13 @@ if articles:
     selected_link = selected_article.get('link') if selected_article else None
 
 
-
-# Deux boutons l'un sous l'autre pour résumer l'article en 280 ou 600 caractères
-
-
-# Affichage des boutons l'un sous l'autre et du résultat
+# Déclaration des variables de résumé et d'utilisation des tokens
 resume_tweet = None
 tweet_in_tok = tweet_out_tok = tweet_price = None
 resume_linkedin = None
 linkedin_in_tok = linkedin_out_tok = linkedin_price = None
+
+# Deux boutons l'un sous l'autre pour résumer l'article en 280 ou 600 caractères
 if st.button("En faire un tweet (280 caractères)"):
     res = generer_resume(selected_link, client, 280, "Tweet")
     if res and isinstance(res, (list, tuple)) and len(res) == 4:
@@ -97,16 +96,15 @@ if st.button("En faire un résumé LinkedIn (600 caractères)"):
         resume_linkedin = res
 
 def render_resume_card(summary_text, label, in_tok=None, out_tok=None, price=None):
-    """Affiche le résumé dans un encart sombre avec un titre et les infos tokens/prix."""
     escaped = html.escape(summary_text)
     html_content = f"""
-<div style="background-color:{background_color}; color:#ffffff; padding:15px; border-radius:8px; margin:12px 0; border:1px solid {border_color}; ">
-<h3 style="margin:0 0 8px 0; font-size:26px; padding:0; color:{text_highlight_color};">Votre résumé prêt à être publié</h3>
-<div style="white-space:pre-wrap; font-size:16px; line-height:1.4; margin: 20px 0;">{escaped}</div>
-<p style="margin:0; font-size:13px; line-height:1.4; opacity:0.4;">{label}</p>
-<div style='font-size:12px; color:#bbb; margin-top:8px;'>Tokens utilisés : entrée <b>{in_tok if in_tok is not None else '?'} </b> / sortie <b>{out_tok if out_tok is not None else '?'} </b> | Prix estimé : <b>{f'${price:.5f}' if price is not None else '?'}</b></div>
-</div>
-"""
+    <div style="background-color:{background_color}; color:#ffffff; padding:15px; border-radius:8px; margin:12px 0; border:1px solid {border_color}; ">
+    <h3 style="margin:0 0 8px 0; font-size:26px; padding:0; color:{text_highlight_color};">Votre résumé prêt à être publié</h3>
+    <div style="white-space:pre-wrap; font-size:16px; line-height:1.4; margin: 20px 0;">{escaped}</div>
+    <p style="margin:0; font-size:13px; line-height:1.4; opacity:0.4;">{label}</p>
+    <div style='font-size:12px; color:#bbb; margin-top:8px;'>Tokens utilisés : entrée <b>{in_tok if in_tok is not None else '?'} </b> / sortie <b>{out_tok if out_tok is not None else '?'} </b> | Prix estimé : <b>{f'${price:.5f}' if price is not None else '?'}</b></div>
+    </div>
+    """
     st.markdown(html_content, unsafe_allow_html=True)
 
 if resume_tweet:
