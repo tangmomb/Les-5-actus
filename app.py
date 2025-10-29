@@ -33,21 +33,18 @@ categories = ["Généraliste", "Politique", "Tech", "Sports", "Environnement"]
 selected_category = st.selectbox("Sélectionne une catégorie :", categories)
 
 # --- Choisir l'URL en fonction de la catégorie ---
-if selected_category == "Généraliste":
-    url = "https://www.20minutes.fr/feeds/rss-une.xml"
-elif selected_category == "Politique":
-    url = "https://www.20minutes.fr/feeds/rss-politique.xml"
-elif selected_category == "Tech":
-    url = "https://www.01net.com/actualites/feed/"
-elif selected_category == "Sports":
-    url = "https://dwh.lequipe.fr/api/edito/rss?path=/"
-elif selected_category == "Environnement":
-    url = "https://www.actu-environnement.com/"
-else:
-    url = "https://www.20minutes.fr/feeds/rss-une.xml"  # fallback
+urls = {
+    "Généraliste": "https://www.20minutes.fr/feeds/rss-une.xml",
+    "Politique": "https://www.20minutes.fr/feeds/rss-politique.xml",
+    "Tech": "https://www.01net.com/actualites/feed/",
+    "Sports": "https://dwh.lequipe.fr/api/edito/rss?path=/",
+    "Environnement": "https://www.actu-environnement.com/",
+}
 
+# Récupérer l’URL selon la catégorie choisie dans le menu déroulant, avec une valeur par défaut
+url = urls.get(selected_category, "https://www.20minutes.fr/feeds/rss-une.xml")
 
-# Création de la liste d'articles
+# Création de la liste (list) d'articles
 articles = []
 nombre_articles = 5
 
@@ -95,6 +92,7 @@ if st.button("En faire un résumé LinkedIn (600 caractères)"):
     elif res and isinstance(res, str):
         resume_linkedin = res
 
+#fonction d'affichage du résumé
 def render_resume_card(summary_text, label, in_tok=None, out_tok=None, price=None):
     escaped = html.escape(summary_text)
     html_content = f"""

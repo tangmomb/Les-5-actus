@@ -30,7 +30,6 @@ def get_token_usage_info(response):
         price = (input_tokens / 1_000_000 * 0.5) + (output_tokens / 1_000_000 * 1.5)
     return input_tokens, output_tokens, price
 
-
 def generer_resume(selected_link, client, max_length, label):
     import streamlit as st
     if not selected_link:

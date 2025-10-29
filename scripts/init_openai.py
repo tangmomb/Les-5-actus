@@ -1,12 +1,9 @@
 import streamlit as st
 from openai import OpenAI
 
-def get_openai_client():
-    """
-    Gère la saisie et le stockage de la clé API OpenAI dans la session Streamlit.
-    Retourne un client OpenAI prêt à l'emploi.
-    """
+# Création du client OpenAI avec saisie de la clé API
 
+def get_openai_client():
     # --- Stockage de la clé API dans la session ---
     if "api_key" not in st.session_state:
         st.session_state.api_key = ""
