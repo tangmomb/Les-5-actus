@@ -68,7 +68,6 @@ def generer_resume(selected_link, client, max_length, label):
                 model="gpt-3.5-turbo",
                 input=prompt,
             )
-            print("[DEBUG OPENAI RESPONSE]", response)
             summary = None
             if hasattr(response, 'output_text') and response.output_text:
                 summary = response.output_text
@@ -95,7 +94,7 @@ def generer_resume(selected_link, client, max_length, label):
             if summary:
                 # Si besoin, retourne aussi les tokens/prix
                 input_tokens, output_tokens, price = get_token_usage_info(response)
-                print(f"[TOKENS] input: {input_tokens}, output: {output_tokens}, price: {price}")
+                # debug print supprimé
                 return summary, input_tokens, output_tokens, price
             else:
                 st.error("Impossible d'extraire le résumé depuis la réponse OpenAI.")
