@@ -80,30 +80,37 @@ if articles:
 
 # Affichage des boutons l'un sous l'autre et du résultat
 resume_tweet = None
+tweet_in_tok = tweet_out_tok = tweet_price = None
 resume_linkedin = None
+linkedin_in_tok = linkedin_out_tok = linkedin_price = None
 if st.button("En faire un tweet (280 caractères)"):
-    resume_tweet = generer_resume(selected_link, client, 280, "Tweet")
+    res = generer_resume(selected_link, client, 280, "Tweet")
+    if res and isinstance(res, (list, tuple)) and len(res) == 4:
+        resume_tweet, tweet_in_tok, tweet_out_tok, tweet_price = res
+    elif res and isinstance(res, str):
+        resume_tweet = res
 if st.button("En faire un résumé LinkedIn (600 caractères)"):
-    resume_linkedin = generer_resume(selected_link, client, 600, "LinkedIn")
+    res = generer_resume(selected_link, client, 600, "LinkedIn")
+    if res and isinstance(res, (list, tuple)) and len(res) == 4:
+        resume_linkedin, linkedin_in_tok, linkedin_out_tok, linkedin_price = res
+    elif res and isinstance(res, str):
+        resume_linkedin = res
 
-def render_resume_card(summary_text, label):
-    """Affiche le résumé dans un encart sombre avec un titre.
-
-    summary_text est échappé pour éviter l'injection HTML et affiché en
-    respectant les retours à la ligne (white-space: pre-wrap).
-    """
+def render_resume_card(summary_text, label, in_tok=None, out_tok=None, price=None):
+    """Affiche le résumé dans un encart sombre avec un titre et les infos tokens/prix."""
     escaped = html.escape(summary_text)
     html_content = f"""
 <div style="background-color:{background_color}; color:#ffffff; padding:15px; border-radius:8px; margin:12px 0; border:1px solid {border_color}; ">
 <h3 style="margin:0 0 8px 0; font-size:26px; padding:0; color:{text_highlight_color};">Votre résumé prêt à être publié</h3>
 <div style="white-space:pre-wrap; font-size:16px; line-height:1.4; margin: 20px 0;">{escaped}</div>
 <p style="margin:0; font-size:13px; line-height:1.4; opacity:0.4;">{label}</p>
+<div style='font-size:12px; color:#bbb; margin-top:8px;'>Tokens utilisés : entrée <b>{in_tok if in_tok is not None else '?'} </b> / sortie <b>{out_tok if out_tok is not None else '?'} </b> | Prix estimé : <b>{f'${price:.5f}' if price is not None else '?'}</b></div>
 </div>
 """
     st.markdown(html_content, unsafe_allow_html=True)
 
 if resume_tweet:
-    render_resume_card(resume_tweet, "Tweet (≤280 caractères)")
+    render_resume_card(resume_tweet, "Tweet (≤280 caractères)", in_tok=tweet_in_tok, out_tok=tweet_out_tok, price=tweet_price)
 if resume_linkedin:
-    render_resume_card(resume_linkedin, "LinkedIn (≤600 caractères)")
+    render_resume_card(resume_linkedin, "LinkedIn (≤600 caractères)", in_tok=linkedin_in_tok, out_tok=linkedin_out_tok, price=linkedin_price)
 
