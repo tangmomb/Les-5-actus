@@ -55,6 +55,75 @@ else:
     url = "https://www.20minutes.fr/feeds/rss-une.xml"  # fallback
 
 
+# Création de la liste d'articles
+articles = []
+
+def afficher_si_scraping(n):
+    """Scrape les 5 premiers articles du site actu-environnement.com et les affiche dans Streamlit."""
+    url = "https://www.actu-environnement.com/"
+    try:
+        response = requests.get(url)
+        # Utilise l'encodage détecté automatiquement (chardet)
+        encoding = response.apparent_encoding or 'utf-8'
+        html_data = response.content.decode(encoding, errors='replace')
+        soup = BeautifulSoup(html_data, "html.parser")
+        blocs = soup.find_all("div", class_="news")
+        articles = []
+        html_content = (
+            f'<div style="height:500px; overflow:auto; border:1px solid {border_color}; background-color:{background_color};'
+            'padding:10px; border-radius:10px;">'
+        )
+        for bloc in blocs[:n]:
+            # Image
+            illu_div = bloc.find("div", class_="illustration")
+            img_tag = illu_div.find("img") if illu_div else None
+            image_url = img_tag["src"] if img_tag and img_tag.has_attr("src") else ""
+            if image_url and image_url.startswith("/"):
+                image_url = url.rstrip("/") + image_url
+            # Titre et lien
+            titre_tag = bloc.find("h2", class_="titre")
+            titre_a = titre_tag.find("a") if titre_tag else None
+            titre = html.unescape(titre_a.get_text(strip=True)) if titre_a else "Titre non trouvé"
+            lien = titre_a["href"] if titre_a and titre_a.has_attr("href") else "#"
+            full_link = url.rstrip("/") + lien if lien.startswith("/") else lien
+            # Description
+            desc_tag = bloc.find("p", class_="chapeau")
+            desc_a = desc_tag.find("a") if desc_tag else None
+            description = html.unescape(desc_a.get_text(strip=True)) if desc_a else ""
+            # Carte HTML
+            html_content += (
+                '<div style="display:flex; border-bottom:1px solid #ccc; '
+                'padding:10px 10px 40px 10px; margin-bottom:15px; '
+                'gap:15px; align-items:flex-start;">'
+            )
+            if image_url:
+                html_content += (
+                    f'<img src="{image_url}" '
+                    'style="width:200px; height:120px; object-fit:cover; border-radius:5px;">'
+                )
+            html_content += (
+                f'<div style="flex:1;">'
+                f'<h2 style="font-size:20px; margin:0; padding:0;">{titre}</h2>'
+                f'<p style="opacity:0.8; line-height:1.3; margin:10px 0 25px 0;">{description}</p>'
+                f'<a href="{full_link}" target="_blank" '
+                'style="background-color:#1E90FF; color:white; padding:5px 10px; '
+                'text-decoration:none; border-radius:5px;">Lire l\'article</a>'
+                '</div>'
+                '</div>'
+            )
+            articles.append({
+                'title': titre,
+                'link': full_link,
+                'description': description,
+                'image': image_url,
+            })
+        html_content += '</div>'
+        st.markdown(html_content, unsafe_allow_html=True)
+        return articles
+    except Exception as e:
+        st.error(f"Erreur lors du scraping d'Actu Environnement : {e}")
+        return []
+    
 def afficher_si_rss(url, n):
     """Affiche les articles d’un flux RSS dans Streamlit."""
     feed = feedparser.parse(url)
@@ -100,63 +169,6 @@ def afficher_si_rss(url, n):
     html_content += '</div>'
     st.markdown(html_content, unsafe_allow_html=True)
     return articles
-
-
-def afficher_si_scraping(n):
-    """Scrape les 5 premiers articles du site actu-environnement.com et les affiche dans Streamlit."""
-    url = "https://www.actu-environnement.com/"
-    try:
-        response = requests.get(url)
-        # Utilise l'encodage détecté automatiquement (chardet)
-        encoding = response.apparent_encoding or 'utf-8'
-        html_data = response.content.decode(encoding, errors='replace')
-        soup = BeautifulSoup(html_data, "html.parser")
-        titres = soup.find_all("h2", class_="titre")
-        articles = []
-        html_content = (
-            f'<div style="height:500px; overflow:auto; border:1px solid {border_color}; background-color:{background_color};'
-            'padding:10px; border-radius:10px;">'
-        )
-        for i, h2 in enumerate(titres[:n], start=1):
-            if h2.a:
-                titre = h2.a.get_text(strip=True)
-                if not titre:
-                    titre = h2.a.decode_contents()
-            else:
-                titre = "Titre non trouvé"
-            titre = html.unescape(titre)
-            lien = h2.a["href"] if h2.a and "href" in h2.a.attrs else "#"
-            full_link = url.rstrip('/') + lien
-            html_content += (
-                '<div style="display:flex; border-bottom:1px solid #ccc; '
-                'padding:10px 10px 40px 10px; margin-bottom:15px; '
-                'gap:15px; align-items:flex-start;">'
-            )
-            html_content += (
-                f'<div style="flex:1;">'
-                f'<h2 style="font-size:20px; margin:0; padding:0;">{titre}</h2>'
-                f'<a href="{full_link}" target="_blank" '
-                'style="background-color:#1E90FF; color:white; padding:5px 10px; '
-                'text-decoration:none; border-radius:5px;">Lire l\'article</a>'
-                '</div>'
-                '</div>'
-            )
-            articles.append({
-                'title': titre,
-                'link': full_link,
-                'description': '',
-                'image': '',
-            })
-        html_content += '</div>'
-        st.markdown(html_content, unsafe_allow_html=True)
-        return articles
-    except Exception as e:
-        st.error(f"Erreur lors du scraping d'Actu Environnement : {e}")
-        return []
-
-
-articles = []
-# Création de la liste d'articles
 
 
 if selected_category == "Environnement":
