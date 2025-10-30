@@ -6,6 +6,7 @@ from scripts.colors import background_color, border_color, text_highlight_color
 from scripts.resume import generer_resume
 from datetime import datetime
 from scripts.init_openai import get_openai_client
+from scripts.render_card import render_resume_card
 
 
 # Définir la locale en français
@@ -33,18 +34,21 @@ categories = ["Généraliste", "Politique", "Tech", "Sports", "Environnement"]
 selected_category = st.selectbox("Sélectionne une catégorie :", categories)
 
 # --- Choisir l'URL en fonction de la catégorie ---
-urls = {
-    "Généraliste": "https://www.20minutes.fr/feeds/rss-une.xml",
-    "Politique": "https://www.20minutes.fr/feeds/rss-politique.xml",
-    "Tech": "https://www.01net.com/actualites/feed/",
-    "Sports": "https://dwh.lequipe.fr/api/edito/rss?path=/",
-    "Environnement": "https://www.actu-environnement.com/",
-}
+if selected_category == "Généraliste":
+    url = "https://www.20minutes.fr/feeds/rss-une.xml"
+elif selected_category == "Politique":
+    url = "https://www.20minutes.fr/feeds/rss-politique.xml"
+elif selected_category == "Tech":
+    url = "https://www.01net.com/actualites/feed/"
+elif selected_category == "Sports":
+    url = "https://dwh.lequipe.fr/api/edito/rss?path=/"
+elif selected_category == "Environnement":
+    url = "https://www.actu-environnement.com/"
+else:
+    url = "https://www.20minutes.fr/feeds/rss-une.xml"  # fallback
 
-# Récupérer l’URL selon la catégorie choisie dans le menu déroulant, avec une valeur par défaut
-url = urls.get(selected_category, "https://www.20minutes.fr/feeds/rss-une.xml")
 
-# Création de la liste (list) d'articles
+# Création de la liste d'articles
 articles = []
 nombre_articles = 5
 
@@ -92,19 +96,7 @@ if st.button("En faire un résumé LinkedIn (600 caractères)"):
     elif res and isinstance(res, str):
         resume_linkedin = res
 
-#fonction d'affichage du résumé
-def render_resume_card(summary_text, label, in_tok=None, out_tok=None, price=None):
-    escaped = html.escape(summary_text)
-    html_content = f"""
-    <div style="background-color:{background_color}; color:#ffffff; padding:15px; border-radius:8px; margin:12px 0; border:1px solid {border_color}; ">
-    <h3 style="margin:0 0 8px 0; font-size:26px; padding:0; color:{text_highlight_color};">Votre résumé prêt à être publié</h3>
-    <div style="white-space:pre-wrap; font-size:16px; line-height:1.4; margin: 20px 0;">{escaped}</div>
-    <p style="margin:0; font-size:13px; line-height:1.4; opacity:0.4;">{label}</p>
-    <div style='font-size:12px; color:#bbb; margin-top:8px;'>Tokens utilisés : entrée <b>{in_tok if in_tok is not None else '?'} </b> / sortie <b>{out_tok if out_tok is not None else '?'} </b> | Prix estimé : <b>{f'${price:.5f}' if price is not None else '?'}</b></div>
-    </div>
-    """
-    st.markdown(html_content, unsafe_allow_html=True)
-
+# Fonction d'affichage de résumé
 if resume_tweet:
     render_resume_card(resume_tweet, "Tweet (≤280 caractères)", in_tok=tweet_in_tok, out_tok=tweet_out_tok, price=tweet_price)
 if resume_linkedin:
