@@ -48,7 +48,7 @@ else:
     url = "https://www.20minutes.fr/feeds/rss-une.xml"  # fallback
 
 
-# Création de la liste d'articles
+# Création de la liste (list) d'articles
 articles = []
 nombre_articles = 5
 
