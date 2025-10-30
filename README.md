@@ -40,7 +40,7 @@ Deux boutons permettent de générer un résumé :
 - Tweet (280 caractères) → résumé court et percutant, idéal pour X/Twitter.
 - LinkedIn (600 caractères) → résumé plus détaillé, adapté à une publication professionnelle.
 
-Le texte est généré en temps réel via l’API OpenAI.
+Un résumé de la taille correspondante est généré via l’API OpenAI.
 
 ### <u>Affichage du résumé</u>
 
@@ -63,14 +63,14 @@ Le résumé s’affiche dans une carte colorée et bien présentée, avec :
 Voici la structure des fichiers du projet :
 
 ```text
-├── app.py                      # Fichier principal de l'application
+├── app.py                        # Fichier principal de l'application
 ├── scripts/
-│   ├── articles.py             # Fonctions de récupération et d’affichage des articles
-│   ├── colors.py               # Palette de couleurs pour le design
-│   ├── resume.py               # Fonction pour générer les résumés OpenAI
-│   ├── init_openai.py          # Initialisation du client OpenAI
-│   └── __init__.py
-└── requirements.txt            # Liste des dépendances Python
+│   ├── articles.py               # Fonctions de récupération et d’affichage des articles
+│   ├── colors.py                 # Palette de couleurs pour le design
+│   ├── resume.py                 # Fonction pour générer les résumés OpenAI
+│   ├── render_card.py            # Affichage graphique des cartes de résumé
+│   ├── init_openai.py            # Initialisation du client OpenAI
+├── requirements.txt              # Liste des dépendances Python
 ```
 
 ## **Pour exécuter le projet**
@@ -85,8 +85,7 @@ streamlit run app.py
 
 ### <u>Ouvrir dans le navigateur</u>
 
-Streamlit lance automatiquement la page à l’adresse :
-http://localhost:8501
+Streamlit lance automatiquement l'app
 
 ## **Améliorations possibles**
 
@@ -97,5 +96,5 @@ http://localhost:8501
 
 ## **Équipe projet**
 
-- Tanguy MOMBERT
 - Alexandre JANNIC
+- Tanguy MOMBERT
