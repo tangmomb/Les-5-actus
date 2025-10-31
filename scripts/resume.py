@@ -83,6 +83,7 @@ def generer_resume(selected_link, client, max_length, label):
                     summary = "".join(parts).strip() if parts else None
                 except Exception:
                     summary = None
+            # si la réponse est reçue selon l'ancienne structure
             if not summary:
                 try:
                     choices = getattr(response, 'choices', None)
