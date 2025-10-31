@@ -101,4 +101,3 @@ if resume_tweet:
     render_resume_card(resume_tweet, "Tweet (≤280 caractères)", in_tok=tweet_in_tok, out_tok=tweet_out_tok, price=tweet_price)
 if resume_linkedin:
     render_resume_card(resume_linkedin, "LinkedIn (≤600 caractères)", in_tok=linkedin_in_tok, out_tok=linkedin_out_tok, price=linkedin_price)
-
