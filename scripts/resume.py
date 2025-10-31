@@ -101,3 +101,41 @@ def generer_resume(selected_link, client, max_length, label):
         except Exception as e:
             st.error(f"Erreur lors de l'appel à l'API OpenAI : {e}")
             return None, None, None, None
+
+
+# Exemple de structure de réponse OpenAI (pour référence)
+
+# {
+#   "id": "response-1234abcd",
+#   "object": "response",
+#   "created": 1699999999,
+#   "model": "gpt-4o",
+#   "input": “…”,
+#   "output_text": "Le texte généré par le modèle…",
+#   "output": [
+#     {
+#       "role": "assistant",
+#       "content": [
+#         {
+#           "type": "output_text",
+#           "text": "Voici le contenu généré…"
+#         }
+#       ]
+#     }
+#   ],
+#   "choices": [
+#     {
+#       "message": {
+#         "role": "assistant",
+#         "content": "Le contenu généré (version ancienne API)",
+#         // éventuellement d’autres clés
+#       }
+#     }
+#   ],
+#   "usage": {
+#     "prompt_tokens": 150,
+#     "completion_tokens": 30,
+#     "total_tokens": 180
+#   },
+#   "error": null
+# }
