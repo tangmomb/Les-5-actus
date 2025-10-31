@@ -91,9 +91,8 @@ def generer_resume(selected_link, client, max_length, label):
                 except Exception:
                     summary = None
             if summary:
-                # Si besoin, retourne aussi les tokens/prix
+                # retourne les tokens/prix
                 input_tokens, output_tokens, price = get_token_usage_info(response)
-                # debug print supprimé
                 return summary, input_tokens, output_tokens, price
             else:
                 st.error("Impossible d'extraire le résumé depuis la réponse OpenAI.")
